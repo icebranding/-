@@ -21,13 +21,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenConsultationModal }) => {
   return (
     <header className="sticky top-0 z-40 w-full bg-slate-950/90 backdrop-blur-md border-b border-slate-800 text-slate-100">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-        {/* Zone 1: Brand title in regular Pretendard font */}
+        {/* Zone 1: Brand title in Pretendard bold font */}
         <a 
           href="#" 
-          className="flex items-center hover:opacity-85 transition-opacity py-1 shrink-0"
+          className="flex items-center hover:opacity-90 transition-opacity py-1 shrink-0"
           aria-label="해드림 사이드미러 홈으로 이동"
         >
-          <span className="font-['Pretendard',sans-serif] text-xl sm:text-2xl font-normal tracking-tight text-white">
+          <span className="font-['Pretendard',sans-serif] text-xl sm:text-2xl font-bold tracking-tight text-white">
             해드림 사이드미러
           </span>
         </a>

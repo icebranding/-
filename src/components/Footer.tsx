@@ -10,7 +10,7 @@ export const Footer: React.FC = () => {
           {/* Brand & Purpose */}
           <div className="md:col-span-5 space-y-3">
             <div className="flex items-center gap-2">
-              <span className="font-['Pretendard',sans-serif] text-base font-normal text-white tracking-tight">
+              <span className="font-['Pretendard',sans-serif] text-base font-bold text-white tracking-tight">
                 {CONFIG.companyName}
               </span>
             </div>
