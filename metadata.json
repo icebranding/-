@@ -1,0 +1,6 @@
+{
+  "name": "해드림 사이드미러",
+  "description": "사이드미러 파손, 접이불량, 거울 및 커버 교체 등 자동차 사이드미러 출장수리 전문 랜딩페이지",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
