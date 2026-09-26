@@ -50,16 +50,25 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
-    if (initialSymptom) {
-      setSymptoms(initialSymptom);
+    if (isOpen) {
+      setSymptoms(initialSymptom || '');
+      setIsSubmitted(false);
+      setIsSubmitting(false);
     }
-  }, [initialSymptom]);
+  }, [isOpen, initialSymptom]);
+
+  const handleClose = () => {
+    setSymptoms('');
+    setIsSubmitted(false);
+    setIsSubmitting(false);
+    onClose();
+  };
 
   // Handle ESC key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
     if (isOpen) {
@@ -70,7 +79,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -182,7 +191,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     setSentMessage('');
     setSmsLink('');
     setIsCopied(false);
-    onClose();
+    handleClose();
   };
 
   return (
@@ -190,6 +199,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
+      onClick={handleClose}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
     >
       <div
@@ -205,7 +215,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
             </h3>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
             aria-label="닫기"
           >
