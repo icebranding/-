@@ -8,10 +8,17 @@ import {
   MessageSquare, 
   Copy, 
   Check, 
-  Camera 
+  Camera,
+  Share2 
 } from 'lucide-react';
 import { CONFIG } from '../config';
-import { openSmsApp } from '../utils/sms';
+import { 
+  openSmsApp, 
+  shareConsultationWithPhotos, 
+  canSharePhotosWithFiles, 
+  formatConsultationMessage,
+  getSmsLink 
+} from '../utils/sms';
 
 interface FinalCTASectionProps {
   onOpenConsultationModal: () => void;
@@ -47,25 +54,59 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({ onOpenConsulta
     }
   };
 
-  const handleInlineSubmit = (e: React.FormEvent) => {
+  const handleInlineSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) {
       alert('성함과 연락처를 입력해주세요.');
       return;
     }
 
-    // 방법 1: 010-9218-9318 번호로 휴대폰 문자 앱 자동 실행 및 프리필
-    const { message, smsUrl } = openSmsApp({
+    const formData = {
       name,
       phone,
       vehicleModel: carInfo,
       location,
       symptoms: symptom,
-    });
+      photoCount: photos.length,
+    };
 
-    setSentMessage(message);
-    setSmsLink(smsUrl);
+    let shared = false;
+    if (photos.length > 0 && canSharePhotosWithFiles(photos)) {
+      const shareResult = await shareConsultationWithPhotos({
+        data: formData,
+        photos,
+      });
+      shared = shareResult.shared;
+    }
+
+    if (!shared) {
+      // 방법 1: 010-9210-9318 번호로 휴대폰 문자 앱 자동 실행 및 프리필
+      const { message, smsUrl } = openSmsApp(formData, photos.length);
+      setSentMessage(message);
+      setSmsLink(smsUrl);
+    } else {
+      const message = formatConsultationMessage(formData, photos.length);
+      setSentMessage(message);
+      setSmsLink(getSmsLink(message));
+    }
+
     setIsSubmitted(true);
+  };
+
+  const handleShareAgain = async () => {
+    if (photos.length > 0) {
+      await shareConsultationWithPhotos({
+        data: {
+          name,
+          phone,
+          vehicleModel: carInfo,
+          location,
+          symptoms: symptom,
+          photoCount: photos.length,
+        },
+        photos,
+      });
+    }
   };
 
   const handleCopyMessage = () => {
@@ -179,12 +220,46 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({ onOpenConsulta
                     {sentMessage}
                   </div>
 
-                  <div className="p-3 bg-amber-950/40 border border-amber-800/60 rounded-xl text-xs text-amber-200 text-left flex items-start gap-2">
-                    <Camera className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                    <span>
-                      <strong>사진 전송:</strong> 문자 앱 화면에서 깨지거나 파손된 부위 사진을 함께 첨부(MMS)해주시면 바로 견적과 일정을 확인해 드립니다.
-                    </span>
-                  </div>
+                  {/* Photo guide & preview if photos were attached */}
+                  {photos.length > 0 ? (
+                    <div className="p-3.5 bg-amber-950/40 border border-amber-500/50 rounded-xl text-left space-y-2.5">
+                      <div className="flex items-center gap-1.5 font-bold text-amber-300 text-xs sm:text-sm">
+                        <Camera className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span>📸 사진 전송 필수 안내 (선택하신 {photos.length}장)</span>
+                      </div>
+                      <p className="text-xs text-amber-200/90 leading-relaxed">
+                        스마트폰 보안 정책상 브라우저에서 문자 앱으로 사진이 자동으로 넘어가지 않습니다.
+                        문자 앱 입력창 옆의 <strong>[사진 첨부 📎]</strong> 아이콘을 눌러 방금 찍으신 사진을 추가해 주시면 사장님(<strong>{CONFIG.smsNumber}</strong>)께 사진이 함께 도착합니다!
+                      </p>
+                      
+                      {/* Photo thumbnail previews */}
+                      <div className="flex gap-2 overflow-x-auto py-1">
+                        {photoPreviews.map((src, i) => (
+                          <div key={i} className="relative w-12 h-12 rounded-lg overflow-hidden border border-amber-500/40 shrink-0">
+                            <img src={src} alt="선택한 사진" className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+
+                      {canSharePhotosWithFiles(photos) && (
+                        <button
+                          type="button"
+                          onClick={handleShareAgain}
+                          className="w-full py-2.5 px-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold rounded-lg flex items-center justify-center gap-2 shadow-sm text-xs cursor-pointer"
+                        >
+                          <Share2 className="w-4 h-4" />
+                          <span>사진 자동첨부로 문자/공유 다시 열기</span>
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-amber-950/40 border border-amber-800/60 rounded-xl text-xs text-amber-200 text-left flex items-start gap-2">
+                      <Camera className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                      <span>
+                        <strong>사진 전송:</strong> 문자 앱 화면에서 깨지거나 파손된 부위 사진을 함께 첨부(MMS)해주시면 바로 견적과 일정을 확인해 드립니다.
+                      </span>
+                    </div>
+                  )}
 
                   <div className="pt-2 flex flex-col sm:flex-row gap-2.5 justify-center">
                     {smsLink && (
@@ -322,6 +397,11 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({ onOpenConsulta
                         <span>사진 파일 선택 (문자 전송 시 함께 첨부 가능)</span>
                       </div>
                     </label>
+
+                    <p className="text-[11px] text-sky-300/90 bg-sky-950/50 p-2 rounded-lg mt-1.5 flex items-start gap-1.5 border border-sky-800/50">
+                      <span className="font-bold shrink-0">💡 팁:</span>
+                      <span>사진을 등록하신 후 아래 버튼을 누르시면, 기기에 따라 사진이 자동 첨부되거나 문자 앱에서 [📎 사진 첨부]로 바로 추가하실 수 있습니다.</span>
+                    </p>
 
                     {/* Previews */}
                     {photoPreviews.length > 0 && (

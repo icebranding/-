@@ -15,10 +15,10 @@ export const CONFIG = {
   serviceType: '자동차 사이드미러 출장수리 전문',
   
   // 연락처 정보 (전화번호 및 문자 수신 번호)
-  phoneNumber: '010-9218-9318',
-  phoneCallUrl: 'tel:01092189318',
-  smsNumber: '010-9218-9318',
-  smsCleanNumber: '01092189318',
+  phoneNumber: '010-9210-9318',
+  phoneCallUrl: 'tel:01092109318',
+  smsNumber: '010-9210-9318',
+  smsCleanNumber: '01092109318',
   
   // 출장 서비스 정보
   serviceArea: '출장 가능 지역 및 일정은 상담을 통해 확인해주세요.',
